@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>층별 하자보수 관리</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
+.top-bar{background:#1a1a1a;color:#fff;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:52px}
+.top-bar .logo{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.save-chip{font-size:12px;padding:4px 12px;border-radius:20px;font-weight:500}
+.chip-ok{background:#1a3d1a;color:#7ecb7e}
+.chip-ing{background:#3d3000;color:#f0c040}
+.chip-err{background:#3d1a1a;color:#f07e7e}
+.container{max-width:860px;margin:0 auto;padding:2rem 1.5rem}
+.page-title{font-size:26px;font-weight:700;color:#1a1a1a;margin-bottom:.25rem;letter-spacing:-.5px}
+.page-sub{font-size:13px;color:#888;margin-bottom:1.75rem}
+.floor-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem}
+.ftab{padding:7px 18px;border-radius:22px;border:1.5px solid #ddd;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#666;transition:all .15s}
+.ftab:hover{border-color:#999;color:#333}
+.ftab.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.75rem}
+.sc{background:#fff;border-radius:12px;padding:1rem 1.25rem;border:1px solid #ebebeb}
+.sc-l{font-size:11px;color:#999;margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.sc-v{font-size:28px;font-weight:700}
+.list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.75rem}
+.dc{background:#fff;border:1px solid #ebebeb;border-radius:14px;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.dc:hover{border-color:#ccc;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.dc-main{display:flex;align-items:center;gap:12px;padding:1rem 1.25rem}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;cursor:pointer;transition:transform .15s}
+.dot:hover{transform:scale(1.4)}
+.dc-body{flex:1;min-width:0}
+.dc-title{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-meta{font-size:12px;color:#999}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;flex-shrink:0}
+.acts{display:flex;gap:4px;flex-shrink:0}
+.ba{background:none;border:1px solid transparent;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;padding:5px 11px;color:#999;transition:all .12s}
+.ba:hover{background:#f5f5f3;border-color:#ddd;color:#333}
+.ba.r:hover{background:#fff0f0;border-color:#ffbbbb;color:#cc3333}
+.ef{border-top:1px solid #f0f0f0;padding:1.1rem 1.25rem;background:#fafafa}
+.ef-title{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.85rem}
+.eg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fl label{font-size:11px;color:#888;font-weight:500;display:block;margin-bottom:4px}
+.fl input,.fl select{width:100%;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;outline:none;transition:border-color .15s}
+.fl input:focus,.fl select:focus{border-color:#999}
+.ea{display:flex;gap:8px;margin-top:.85rem}
+.bok{flex:1;padding:9px;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;border:none;background:#1a1a1a;color:#fff;transition:opacity .15s}
+.bok:hover{opacity:.8}
+.bng{padding:9px 18px;font-size:13px;cursor:pointer;border-radius:9px;border:1px solid #ddd;background:#fff;color:#888}
+.del-bar{background:#fff5f5;border-top:1px solid #ffdddd;padding:.85rem 1.25rem;display:flex;align-items:center;gap:10px}
+.del-bar span{flex:1;font-size:13px;color:#cc3333;font-weight:500}
+.bdok{padding:6px 16px;border-radius:8px;border:none;background:#e03030;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.bdng{padding:6px 14px;border-radius:8px;border:1px solid #ffbbbb;background:#fff;color:#cc3333;font-size:12px;cursor:pointer}
+.add-box{background:#fff;border-radius:16px;padding:1.5rem;border:1px solid #ebebeb}
+.add-box-title{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:1.1rem}
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.badd{width:100%;padding:11px;font-size:14px;font-weight:700;cursor:pointer;border-radius:10px;border:none;background:#1a1a1a;color:#fff;margin-top:.65rem;transition:opacity .15s;letter-spacing:-.2px}
+.badd:hover{opacity:.8}
+.empty{text-align:center;padding:3rem 1rem;color:#bbb;font-size:14px;border:1.5px dashed #e5e5e5;border-radius:14px}
+.empty-icon{font-size:32px;margin-bottom:.5rem}
+.loading{text-align:center;padding:4rem;color:#aaa;font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <span class="logo">층별 하자보수 관리</span>
+  <span class="save-chip chip-ing" id="saveChip">연결 중...</span>
+</div>
+
+<div class="container">
+  <div class="page-title" id="pageTitle">B1층</div>
+  <div class="page-sub" id="pageSub">불러오는 중...</div>
+  <div class="floor-row" id="floorRow"></div>
+  <div class="stats" id="stats"></div>
+  <div class="list" id="list"><div class="loading">Firebase 연결 중...</div></div>
+
+  <div class="add-box">
+    <div class="add-box-title">새 하자 등록</div>
+    <div class="ag">
+      <div class="fl"><label>층</label><select id="nfl"></select></div>
+      <div class="fl"><label>상태</label><select id="ns"><option>미착수</option><option>진행중</option><option>완료</option></select></div>
+    </div>
+    <div class="fl" style="margin-bottom:10px"><label>하자 내용</label><input id="nt" type="text" placeholder="예: 천장 누수, 바닥 균열"></div>
+    <div class="ag">
+      <div class="fl"><label>위치/구역</label><input id="nl" type="text" placeholder="예: 북쪽 복도"></div>
+      <div class="fl"><label>담당자</label><input id="np" type="text" placeholder="이름"></div>
+    </div>
+    <div class="fl"><label>예정일</label><input id="nd" type="date"></div>
+    <button class="badd" onclick="addNew()">+ 등록</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDViAWjs47CLk7VI5uP33zLhC_HALY-r44",
+  authDomain: "haja-manager.firebaseapp.com",
+  projectId: "haja-manager",
+  storageBucket: "haja-manager.firebasestorage.app",
+  messagingSenderId: "938357281606",
+  appId: "1:938357281606:web:ac448231144b82e5d54b47"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const colRef = collection(db, 'haja');
+
+const FLOORS = ['B1','1F','2F','3F','4F','5F','RF'];
+const SL = ['미착수','진행중','완료'];
+let cur = 'B1', delId = null, editId = null;
+let D = {};
+FLOORS.forEach(f => D[f] = []);
+
+function setChip(state) {
+  const el = document.getElementById('saveChip');
+  if(state==='ok'||state==='live'){el.textContent='실시간 연결됨';el.className='save-chip chip-ok';}
+  else if(state==='ing'){el.textContent='저장 중...';el.className='save-chip chip-ing';}
+  else{el.textContent='연결 오류';el.className='save-chip chip-err';}
+}
+
+function sBg(s){return s==='미착수'?'#fff0f0':s==='진행중'?'#fffbf0':'#f0fff4'}
+function sTx(s){return s==='미착수'?'#cc3333':s==='진행중'?'#996600':'#2d8a2d'}
+function sDot(s){return s==='미착수'?'#e03030':s==='진행중'?'#e09000':'#30a030'}
+function fmtD(d){if(!d)return '날짜 미정';var p=d.split('-');return p[1]+'월 '+p[2]+'일';}
+function findItem(id){for(const f of FLOORS){const it=D[f].find(x=>x.id===id);if(it)return it;}return null;}
+
+// 실시간 데이터 동기화
+onSnapshot(colRef, (snapshot) => {
+  FLOORS.forEach(f => D[f] = []);
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    if(FLOORS.includes(data.floor)) {
+      D[data.floor].push({id: docSnap.id, ...data});
+    }
+  });
+  FLOORS.forEach(f => {
+    D[f].sort((a,b) => (a.createdAt?.seconds||0) - (b.createdAt?.seconds||0));
+  });
+  setChip('live');
+  render();
+}, () => setChip('err'));
+
+async function addNew() {
+  const fl = document.getElementById('nfl').value;
+  const t = document.getElementById('nt').value.trim();
+  if(!t){alert('하자 내용을 입력하세요');return;}
+  setChip('ing');
+  try {
+    await addDoc(colRef, {
+      floor: fl,
+      title: t,
+      loc: document.getElementById('nl').value || '-',
+      status: document.getElementById('ns').value,
+      date: document.getElementById('nd').value || '',
+      person: document.getElementById('np').value || '-',
+      createdAt: serverTimestamp()
+    });
+    ['nt','nl','np','nd'].forEach(x => document.getElementById(x).value = '');
+    if(fl !== cur) cur = fl;
+  } catch(e){ alert('저장 실패: '+e.message); setChip('err'); }
+}
+
+async function cycleS(id) {
+  const it = findItem(id);
+  if(!it) return;
+  setChip('ing');
+  try { await updateDoc(doc(db,'haja',id), {status: SL[(SL.indexOf(it.status)+1)%3]}); }
+  catch(e){ setChip('err'); }
+}
+
+function startEdit(id){ editId=editId===id?null:id; delId=null; render(); if(editId)setTimeout(()=>{const el=document.getElementById('et');if(el){el.focus();el.select();}},30); }
+function cancelEdit(){ editId=null; render(); }
+
+async function saveEdit() {
+  const it = findItem(editId);
+  if(!it) return;
+  const t = document.getElementById('et').value.trim();
+  if(!t) return;
+  setChip('ing');
+  try {
+    await updateDoc(doc(db,'haja',editId), {
+      title: t,
+      loc: document.getElementById('el').value || '-',
+      status: document.getElementById('es').value,
+      date: document.getElementById('ed').value || '',
+      person: document.getElementById('ep').value || '-'
+    });
+    editId = null;
+  } catch(e){ alert('수정 실패: '+e.message); setChip('err'); }
+}
+
+function askDel(id){ delId=delId===id?null:id; editId=null; render(); }
+function cancelDel(){ delId=null; render(); }
+
+async function doDel() {
+  if(!delId) return;
+  setChip('ing');
+  try { await deleteDoc(doc(db,'haja',delId)); delId=null; }
+  catch(e){ alert('삭제 실패: '+e.message); setChip('err'); }
+}
+
+window.setFloor = f => { cur=f; delId=null; editId=null; render(); };
+window.cycleS=cycleS; window.startEdit=startEdit; window.cancelEdit=cancelEdit;
+window.saveEdit=saveEdit; window.askDel=askDel; window.cancelDel=cancelDel;
+window.doDel=doDel; window.addNew=addNew;
+
+function render() {
+  const items = D[cur]||[];
+  const tot=items.length, todo=items.filter(i=>i.status==='미착수').length,
+        wip=items.filter(i=>i.status==='진행중').length, done=items.filter(i=>i.status==='완료').length;
+
+  document.getElementById('pageTitle').textContent = cur+'층';
+  document.getElementById('pageSub').textContent = '전체 '+tot+'건';
+  document.getElementById('floorRow').innerHTML = FLOORS.map(f=>{
+    const cnt=(D[f]||[]).length;
+    return `<button class="ftab${f===cur?' on':''}" onclick="setFloor('${f}')">${f}${cnt?` <span style="font-size:11px;opacity:.6">${cnt}</span>`:''}</button>`;
+  }).join('');
+  document.getElementById('stats').innerHTML =
+    `<div class="sc"><div class="sc-l">전체 하자</div><div class="sc-v" style="color:#1a1a1a">${tot}</div></div>`
+    +`<div class="sc"><div class="sc-l">미착수</div><div class="sc-v" style="color:#cc3333">${todo}</div></div>`
+    +`<div class="sc"><div class="sc-l">진행중</div><div class="sc-v" style="color:#996600">${wip}</div></div>`
+    +`<div class="sc"><div class="sc-l">완료</div><div class="sc-v" style="color:#2d8a2d">${done}</div></div>`;
+
+  let lH='';
+  if(!items.length){
+    lH='<div class="empty"><div class="empty-icon">✓</div>이 층에 등록된 하자가 없습니다</div>';
+  } else {
+    items.forEach(it=>{
+      const isE=editId===it.id, isD=delId===it.id;
+      const safe=it.title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      lH+=`<div class="dc"><div class="dc-main">
+        <div class="dot" style="background:${sDot(it.status)}" onclick="cycleS('${it.id}')" title="상태 변경"></div>
+        <div class="dc-body">
+          <div class="dc-title">${it.title}</div>
+          <div class="dc-meta">${it.loc} · ${it.person} · ${fmtD(it.date)}</div>
+        </div>
+        <span class="badge" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.status}</span>
+        <div class="acts">
+          <button class="ba" onclick="startEdit('${it.id}')" style="${isE?'background:#f5f5f3;border-color:#ddd;color:#333':''}">수정</button>
+          <button class="ba r" onclick="askDel('${it.id}')">삭제</button>
+        </div></div>`;
+      if(isE){
+        lH+=`<div class="ef"><div class="ef-title">수정 중</div>
+          <div class="eg">
+            <div class="fl"><label>상태</label><select id="es">
+              <option${it.status==='미착수'?' selected':''}>미착수</option>
+              <option${it.status==='진행중'?' selected':''}>진행중</option>
+              <option${it.status==='완료'?' selected':''}>완료</option>
+            </select></div>
+            <div class="fl"><label>담당자</label><input id="ep" type="text" value="${it.person}"></div>
+          </div>
+          <div class="fl" style="margin-bottom:10px"><label>하자 내용</label><input id="et" type="text" value="${safe}"></div>
+          <div class="eg">
+            <div class="fl"><label>위치/구역</label><input id="el" type="text" value="${it.loc}"></div>
+            <div class="fl"><label>예정일</label><input id="ed" type="date" value="${it.date}"></div>
+          </div>
+          <div class="ea">
+            <button class="bok" onclick="saveEdit()">저장</button>
+            <button class="bng" onclick="cancelEdit()">취소</button>
+          </div></div>`;
+      }
+      if(isD){
+        lH+=`<div class="del-bar"><span>"${safe}" 을 삭제할까요?</span>
+          <button class="bdok" onclick="doDel()">삭제</button>
+          <button class="bdng" onclick="cancelDel()">취소</button></div>`;
+      }
+      lH+='</div>';
+    });
+  }
+  document.getElementById('list').innerHTML = lH;
+  const nflEl=document.getElementById('nfl');
+  if(nflEl) nflEl.innerHTML=FLOORS.map(f=>`<option${f===cur?' selected':''}>${f}</option>`).join('');
+}
+</script>
+</body>
+</html>
