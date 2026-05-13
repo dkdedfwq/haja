@@ -60,13 +60,16 @@ body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;b
 .empty{text-align:center;padding:3rem 1rem;color:#bbb;font-size:14px;border:1.5px dashed #e5e5e5;border-radius:14px}
 .empty-icon{font-size:32px;margin-bottom:.5rem}
 .loading{text-align:center;padding:4rem;color:#aaa;font-size:14px}
+.btn-xl{padding:6px 14px;border-radius:20px;border:none;background:#2d6a2d;color:#7ecb7e;font-size:12px;font-weight:600;cursor:pointer}
+.btn-xl:hover{background:#3a8a3a}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <div class="top-bar">
   <span class="logo">층별 하자보수 관리</span>
-  <span class="save-chip chip-ing" id="saveChip">연결 중...</span>
+  <div style="display:flex;gap:10px;align-items:center"><button class="btn-xl" onclick="exportXlsx()">엑셀 내보내기</button><span class="save-chip chip-ing" id="saveChip">연결 중...</span></div>
 </div>
 
 <div class="container">
@@ -207,6 +210,36 @@ window.setFloor = f => { cur=f; delId=null; editId=null; render(); };
 window.cycleS=cycleS; window.startEdit=startEdit; window.cancelEdit=cancelEdit;
 window.saveEdit=saveEdit; window.askDel=askDel; window.cancelDel=cancelDel;
 window.doDel=doDel; window.addNew=addNew;
+window.exportXlsx = function() {
+  const wb = XLSX.utils.book_new();
+  const FLOORS = ['B1','1F','2F','3F','4F','5F','RF'];
+
+  // 층별 시트
+  FLOORS.forEach(fl => {
+    const rows = (D[fl]||[]).map(it => ({
+      '층': fl, '하자내용': it.title, '위치/구역': it.loc,
+      '상태': it.status, '예정일': it.date||'미정', '담당자': it.person
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows, {header:['층','하자내용','위치/구역','상태','예정일','담당자']});
+    ws['!cols'] = [{wch:6},{wch:24},{wch:14},{wch:8},{wch:12},{wch:10}];
+    XLSX.utils.book_append_sheet(wb, ws, fl);
+  });
+
+  // 전체 시트
+  const allRows = [];
+  FLOORS.forEach(fl => {
+    (D[fl]||[]).forEach(it => {
+      allRows.push({'층':fl,'하자내용':it.title,'위치/구역':it.loc,'상태':it.status,'예정일':it.date||'미정','담당자':it.person});
+    });
+  });
+  const wsAll = XLSX.utils.json_to_sheet(allRows, {header:['층','하자내용','위치/구역','상태','예정일','담당자']});
+  wsAll['!cols'] = [{wch:6},{wch:24},{wch:14},{wch:8},{wch:12},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, wsAll, '전체');
+
+  const today = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, '하자보수관리_'+today+'.xlsx');
+};
+
 
 function render() {
   const items = D[cur]||[];
