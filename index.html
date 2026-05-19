@@ -278,41 +278,54 @@ function calMove(d){ calMonth+=d; if(calMonth>11){calMonth=0;calYear++;}else if(
 function renderCal(){
   const months=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   document.getElementById('calTitle').textContent = calYear+'년 '+months[calMonth];
+  
   const first=new Date(calYear,calMonth,1);
   const last=new Date(calYear,calMonth+1,0);
   const today=new Date(); today.setHours(0,0,0,0);
+  
   const dateMap={};
   getAllItems().forEach(it=>{ if(!it.date)return; if(!dateMap[it.date])dateMap[it.date]=[]; dateMap[it.date].push(it); });
+  
   let h='';
-  // 이전달 빈칸
-  for(let i=0;i<first.getDay();i++){
-    const d=new Date(calYear,calMonth,-(first.getDay()-i-1));
-    const ds=d.toISOString().slice(0,10);
-    const items=dateMap[ds]||[];
-    const dots=items.slice(0,2).map(it=>`<div class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,7)}</div>`).join('');
-    h+=`<div class="cal-day other-month" onclick="calDayClick('${ds}')"><div class="cal-day-num">${d.getDate()}</div><div class="cal-dot-row">${dots}</div></div>`;
+  
+  // 1. 이전달 빈칸 영역 (정확한 날짜 및 데이터 바인딩 계산)
+  const startDay = first.getDay();
+  const prevLast = new Date(calYear, calMonth, 0).getDate();
+  for(let i = startDay - 1; i >= 0; i--){
+    const pDate = prevLast - i;
+    const d = new Date(calYear, calMonth - 1, pDate);
+    // ISO 타임존 오차 방지 수동 포맷팅 (YYYY-MM-DD)
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const items = dateMap[ds]||[];
+    const dots = items.slice(0,2).map(it=>`<div class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,7)}</div>`).join('');
+    h+=`<div class="cal-day other-month" onclick="calDayClick('${ds}')"><div class="cal-day-num">${pDate}</div><div class="cal-dot-row">${dots}</div></div>`;
   }
-  // 이번달
+  
+  // 2. 이번달 영역
   for(let d=1;d<=last.getDate();d++){
-    const date=new Date(calYear,calMonth,d);
-    const ds=date.toISOString().slice(0,10);
-    const isToday=date.getTime()===today.getTime();
-    const items=dateMap[ds]||[];
-    const dots=items.slice(0,3).map(it=>`<div class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,7)}</div>`).join('');
-    const more=items.length>3?`<div style="font-size:9px;color:#999">+${items.length-3}건</div>`:'';
+    const date = new Date(calYear,calMonth,d);
+    const ds = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    const isToday = date.getTime()===today.getTime();
+    const items = dateMap[ds]||[];
+    const dots = items.slice(0,3).map(it=>`<div class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,7)}</div>`).join('');
+    const more = items.length>3?`<div style="font-size:9px;color:#999">+${items.length-3}건</div>`:'';
     h+=`<div class="cal-day${isToday?' today':''}" onclick="calDayClick('${ds}')">
       <div class="cal-day-num">${isToday?`<span style="background:#1a1a1a;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px">${d}</span>`:d}</div>
       <div class="cal-dot-row">${dots}${more}</div>
     </div>`;
   }
-  // 다음달 빈칸
-  const remain=42-first.getDay()-last.getDate();
-  for(let i=1;i<=remain;i++){
-    const ds=new Date(calYear,calMonth+1,i).toISOString().slice(0,10);
-    const items=dateMap[ds]||[];
-    const dots=items.slice(0,2).map(it=>`<div class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,7)}</div>`).join('');
+  
+  // 3. 다음달 빈칸 영역 (이번달 끝난 요일 기준으로 깔끔하게 패딩)
+  const endDay = last.getDay();
+  const nextRemain = 6 - endDay;
+  for(let i=1; i<=nextRemain; i++){
+    const d = new Date(calYear, calMonth + 1, i);
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const items = dateMap[ds]||[];
+    const dots = items.slice(0,2).map(it=>`<div class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,7)}</div>`).join('');
     h+=`<div class="cal-day other-month" onclick="calDayClick('${ds}')"><div class="cal-day-num">${i}</div><div class="cal-dot-row">${dots}</div></div>`;
   }
+  
   document.getElementById('calGrid').innerHTML=h;
 }
 
@@ -322,7 +335,7 @@ function calDayClick(ds){
   let h=`<div id="dayPopup" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)this.remove()">
     <div style="background:#fff;border-radius:16px;width:400px;max-width:94vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)">
       <div style="background:#1a1a1a;color:#fff;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:15px;font-weight:700">${p[1]}월 ${p[2]}일 일정</span>
+        <span style="font-size:15px;font-weight:700">${parseInt(p[1])}월 ${parseInt(p[2])}일 일정</span>
         <button onclick="document.getElementById('dayPopup').remove()" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;line-height:1">✕</button>
       </div>
       <div style="padding:1rem;overflow-y:auto;flex:1">`;
@@ -353,7 +366,7 @@ window.showCalAddForm = function(ds){
   const h=`<div id="calAddPopup" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)this.remove()">
     <div style="background:#fff;border-radius:16px;width:400px;max-width:94vw;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)">
       <div style="background:#1a1a1a;color:#fff;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:15px;font-weight:700">${p[1]}월 ${p[2]}일 — 하자 등록</span>
+        <span style="font-size:15px;font-weight:700">${parseInt(p[1])}월 ${parseInt(p[2])}일 — 하자 등록</span>
         <button onclick="document.getElementById('calAddPopup').remove()" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;line-height:1">✕</button>
       </div>
       <div style="padding:1.25rem;display:flex;flex-direction:column;gap:10px">
@@ -386,6 +399,7 @@ window.showCalAddForm = function(ds){
 window.calAddSave = async function(ds){
   const t=document.getElementById('cal-nt').value.trim();
   if(!t){alert('하자 내용을 입력하세요');return;}
+  setChip('ing');
   try{
     await addDoc(colRef,{
       floor:document.getElementById('cal-nfl').value,
@@ -397,7 +411,9 @@ window.calAddSave = async function(ds){
       createdAt:serverTimestamp()
     });
     document.getElementById('calAddPopup').remove();
-  }catch(e){alert('저장 실패: '+e.message);}
+    // 데이터 저장 후 실시간 데이터 스냅샷이 돌지만, 달력 그리드를 즉시 강제 갱신해 줍니다.
+    renderCal();
+  }catch(e){alert('저장 실패: '+e.message); setChip('err');}
 };
 
 window.openCal=openCal; window.closeCal=closeCal; window.calMove=calMove; window.calDayClick=calDayClick;
