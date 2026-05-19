@@ -63,41 +63,30 @@ body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;b
 .btn-xl{padding:6px 14px;border-radius:20px;border:none;background:#2d6a2d;color:#7ecb7e;font-size:12px;font-weight:600;cursor:pointer}
 .btn-xl:hover{background:#3a8a3a}
 
-/* 달력 */
 .btn-cal{padding:6px 14px;border-radius:20px;border:none;background:#1a3d5c;color:#7ec8e3;font-size:12px;font-weight:600;cursor:pointer}
 .btn-cal:hover{background:#1e527a}
 .cal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-start;justify-content:center;padding-top:60px}
 .cal-overlay.open{display:flex}
-.cal-modal{background:#fff;border-radius:20px;width:720px;max-width:96vw;max-height:86vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.cal-modal{background:#fff;border-radius:20px;width:860px;max-width:96vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2)}
 .cal-head{background:#1a1a1a;color:#fff;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
-.cal-head-title{font-size:16px;font-weight:700}
 .cal-nav{display:flex;align-items:center;gap:12px}
 .cal-nav button{background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:2px 8px;border-radius:6px}
 .cal-nav button:hover{background:rgba(255,255,255,.15)}
 .cal-nav span{font-size:14px;font-weight:600;min-width:100px;text-align:center}
-.cal-close{background:none;border:none;color:#aaa;font-size:20px;cursor:pointer}
+.cal-close{background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;line-height:1}
 .cal-close:hover{color:#fff}
-.cal-body{display:flex;flex:1;overflow:hidden}
-.cal-grid-wrap{flex:1;padding:1rem;overflow-y:auto}
+.cal-body{flex:1;padding:1.25rem;overflow-y:auto}
 .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
 .cal-dow span{text-align:center;font-size:11px;font-weight:600;color:#999;padding:4px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal-day{min-height:72px;border-radius:10px;border:1px solid #f0f0f0;padding:6px;cursor:pointer;background:#fafafa;transition:border-color .15s}
-.cal-day:hover{border-color:#ccc;background:#f5f5f3}
-.cal-day.today{border-color:#1a1a1a;background:#fff}
+.cal-day{min-height:90px;border-radius:10px;border:1px solid #f0f0f0;padding:8px;cursor:pointer;background:#fafafa;transition:border-color .15s}
+.cal-day:hover{border-color:#999;background:#f0f0ee}
+.cal-day.today{border-color:#1a1a1a}
 .cal-day.other-month .cal-day-num{color:#ccc}
-.cal-day.selected{border-color:#1a73e8;background:#e8f0fe}
 .cal-day-num{font-size:12px;font-weight:600;color:#333;margin-bottom:4px}
-.cal-day.today .cal-day-num{background:#1a1a1a;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
-.cal-dot-row{display:flex;flex-wrap:wrap;gap:2px}
-.cal-dot{font-size:9px;padding:1px 5px;border-radius:6px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.cal-side{width:240px;border-left:1px solid #f0f0f0;padding:1rem;overflow-y:auto;background:#fafafa}
-.cal-side-title{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:.75rem}
-.cal-side-empty{font-size:12px;color:#bbb;text-align:center;padding:1.5rem 0}
-.cal-item{background:#fff;border:1px solid #ebebeb;border-radius:10px;padding:.65rem .85rem;margin-bottom:6px}
-.cal-item-title{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:2px}
-.cal-item-meta{font-size:11px;color:#999}
-.cal-item-badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;display:inline-block;margin-top:3px}
+.cal-day.today .cal-day-num{display:inline-flex;background:#1a1a1a;color:#fff;width:20px;height:20px;border-radius:50%;align-items:center;justify-content:center;font-size:11px}
+.cal-dot-row{display:flex;flex-direction:column;gap:2px}
+.cal-dot{font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -109,8 +98,7 @@ body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;b
 </div>
 
 
-<!-- 달력 모달 -->
-<div class="cal-overlay" id="calOverlay" onclick="calBgClick(event)">
+<div class="cal-overlay" id="calOverlay" onclick="if(event.target===this)closeCal()">
   <div class="cal-modal">
     <div class="cal-head">
       <div class="cal-nav">
@@ -118,24 +106,17 @@ body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;b
         <span id="calTitle"></span>
         <button onclick="calMove(1)">&#8250;</button>
       </div>
-      <div class="cal-head-title">하자 일정 달력</div>
+      <div style="font-size:15px;font-weight:700">하자 일정 달력</div>
       <button class="cal-close" onclick="closeCal()">✕</button>
     </div>
     <div class="cal-body">
-      <div class="cal-grid-wrap">
-        <div class="cal-dow">
-          <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-        </div>
-        <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-dow">
+        <span style="color:#e03030">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#1a73e8">토</span>
       </div>
-      <div class="cal-side">
-        <div class="cal-side-title" id="calSideTitle">날짜를 선택하세요</div>
-        <div id="calSideList"></div>
-      </div>
+      <div class="cal-grid" id="calGrid"></div>
     </div>
   </div>
 </div>
-
 <div class="container">
   <div class="page-title" id="pageTitle">B1층</div>
   <div class="page-sub" id="pageSub">불러오는 중...</div>
@@ -209,6 +190,7 @@ onSnapshot(colRef, (snapshot) => {
   });
   setChip('live');
   render();
+  if(document.getElementById('calOverlay').classList.contains('open'))renderCal();
 }, () => setChip('err'));
 
 async function addNew() {
@@ -275,103 +257,150 @@ window.cycleS=cycleS; window.startEdit=startEdit; window.cancelEdit=cancelEdit;
 window.saveEdit=saveEdit; window.askDel=askDel; window.cancelDel=cancelDel;
 window.doDel=doDel; window.addNew=addNew;
 
-// ===== 달력 =====
-let calYear, calMonth, calSelDate = null;
-
-function openCal(){
-  const now = new Date();
-  calYear = now.getFullYear();
-  calMonth = now.getMonth();
-  calSelDate = null;
-  document.getElementById('calOverlay').classList.add('open');
-  renderCal();
-}
-function closeCal(){ document.getElementById('calOverlay').classList.remove('open'); }
-function calBgClick(e){ if(e.target===document.getElementById('calOverlay'))closeCal(); }
-function calMove(d){ calMonth+=d; if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
+let calYear, calMonth;
 
 function getAllItems(){
-  const all=[];
   const FLOORS=['B1','1F','2F','3F','4F','5F','RF'];
+  const all=[];
   FLOORS.forEach(f=>(D[f]||[]).forEach(it=>all.push(it)));
   return all;
 }
 
+function openCal(){
+  const now=new Date();
+  calYear=now.getFullYear(); calMonth=now.getMonth();
+  document.getElementById('calOverlay').classList.add('open');
+  renderCal();
+}
+function closeCal(){ document.getElementById('calOverlay').classList.remove('open'); }
+function calMove(d){ calMonth+=d; if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
+
 function renderCal(){
   const months=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   document.getElementById('calTitle').textContent = calYear+'년 '+months[calMonth];
-
-  const first = new Date(calYear, calMonth, 1);
-  const last  = new Date(calYear, calMonth+1, 0);
-  const today = new Date(); today.setHours(0,0,0,0);
-
-  // 날짜별 하자 맵
-  const dateMap = {};
-  getAllItems().forEach(it=>{
-    if(!it.date) return;
-    if(!dateMap[it.date]) dateMap[it.date] = [];
-    dateMap[it.date].push(it);
-  });
-
-  let html='';
-  // 이전 달 빈칸
+  const first=new Date(calYear,calMonth,1);
+  const last=new Date(calYear,calMonth+1,0);
+  const today=new Date(); today.setHours(0,0,0,0);
+  const dateMap={};
+  getAllItems().forEach(it=>{ if(!it.date)return; if(!dateMap[it.date])dateMap[it.date]=[]; dateMap[it.date].push(it); });
+  let h='';
+  // 이전달 빈칸
   for(let i=0;i<first.getDay();i++){
-    const d = new Date(calYear, calMonth, -first.getDay()+i+1);
-    const ds = d.toISOString().slice(0,10);
-    html+=`<div class="cal-day other-month" onclick="calSelect('${ds}')"><div class="cal-day-num">${d.getDate()}</div></div>`;
+    const d=new Date(calYear,calMonth,-(first.getDay()-i-1));
+    const ds=d.toISOString().slice(0,10);
+    const items=dateMap[ds]||[];
+    const dots=items.slice(0,2).map(it=>`<div class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,7)}</div>`).join('');
+    h+=`<div class="cal-day other-month" onclick="calDayClick('${ds}')"><div class="cal-day-num">${d.getDate()}</div><div class="cal-dot-row">${dots}</div></div>`;
   }
-  // 이번 달
+  // 이번달
   for(let d=1;d<=last.getDate();d++){
-    const date = new Date(calYear, calMonth, d);
-    const ds = date.toISOString().slice(0,10);
-    const isToday = date.getTime()===today.getTime();
-    const isSel = ds===calSelDate;
-    const items = dateMap[ds]||[];
-    const dots = items.slice(0,3).map(it=>`<span class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,6)}</span>`).join('');
-    const more = items.length>3?`<span style="font-size:9px;color:#999">+${items.length-3}</span>`:'';
-    html+=`<div class="cal-day${isToday?' today':''}${isSel?' selected':''}" onclick="calSelect('${ds}')">
+    const date=new Date(calYear,calMonth,d);
+    const ds=date.toISOString().slice(0,10);
+    const isToday=date.getTime()===today.getTime();
+    const items=dateMap[ds]||[];
+    const dots=items.slice(0,3).map(it=>`<div class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,7)}</div>`).join('');
+    const more=items.length>3?`<div style="font-size:9px;color:#999">+${items.length-3}건</div>`:'';
+    h+=`<div class="cal-day${isToday?' today':''}" onclick="calDayClick('${ds}')">
       <div class="cal-day-num">${isToday?`<span style="background:#1a1a1a;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px">${d}</span>`:d}</div>
       <div class="cal-dot-row">${dots}${more}</div>
     </div>`;
   }
-  // 다음 달 빈칸
-  const remain = 42 - first.getDay() - last.getDate();
+  // 다음달 빈칸
+  const remain=42-first.getDay()-last.getDate();
   for(let i=1;i<=remain;i++){
-    const d2 = new Date(calYear, calMonth+1, i);
-    const ds = d2.toISOString().slice(0,10);
-    html+=`<div class="cal-day other-month" onclick="calSelect('${ds}')"><div class="cal-day-num">${i}</div></div>`;
+    const ds=new Date(calYear,calMonth+1,i).toISOString().slice(0,10);
+    const items=dateMap[ds]||[];
+    const dots=items.slice(0,2).map(it=>`<div class="cal-dot" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.title.slice(0,7)}</div>`).join('');
+    h+=`<div class="cal-day other-month" onclick="calDayClick('${ds}')"><div class="cal-day-num">${i}</div><div class="cal-dot-row">${dots}</div></div>`;
   }
-  document.getElementById('calGrid').innerHTML = html;
-  if(calSelDate) renderCalSide(calSelDate);
+  document.getElementById('calGrid').innerHTML=h;
 }
 
-function calSelect(ds){
-  calSelDate = ds;
-  renderCal();
-  renderCalSide(ds);
-}
-
-function renderCalSide(ds){
+function calDayClick(ds){
   const p=ds.split('-');
-  document.getElementById('calSideTitle').textContent = p[1]+'월 '+p[2]+'일 일정';
-  const items = getAllItems().filter(it=>it.date===ds);
-  let h='';
+  const items=getAllItems().filter(it=>it.date===ds);
+  let h=`<div id="dayPopup" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)this.remove()">
+    <div style="background:#fff;border-radius:16px;width:400px;max-width:94vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+      <div style="background:#1a1a1a;color:#fff;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:15px;font-weight:700">${p[1]}월 ${p[2]}일 일정</span>
+        <button onclick="document.getElementById('dayPopup').remove()" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;line-height:1">✕</button>
+      </div>
+      <div style="padding:1rem;overflow-y:auto;flex:1">`;
   if(!items.length){
-    h='<div class="cal-side-empty">이 날 예정된 하자가 없습니다</div>';
+    h+=`<div style="text-align:center;padding:1.5rem;color:#bbb;font-size:14px">이 날 예정된 하자가 없습니다</div>`;
   } else {
     items.forEach(it=>{
-      h+=`<div class="cal-item">
-        <div class="cal-item-title">${it.title}</div>
-        <div class="cal-item-meta">${it.floor}층 · ${it.loc} · ${it.person}</div>
-        <span class="cal-item-badge" style="background:${sBg(it.status)};color:${sTx(it.status)}">${it.status}</span>
+      h+=`<div style="background:#fafafa;border:1px solid #ebebeb;border-radius:10px;padding:.75rem 1rem;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:3px">${it.title}</div>
+        <div style="font-size:12px;color:#999;margin-bottom:5px">${it.floor}층 · ${it.loc} · ${it.person}</div>
+        <span style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;background:${sBg(it.status)};color:${sTx(it.status)}">${it.status}</span>
       </div>`;
     });
   }
-  document.getElementById('calSideList').innerHTML = h;
+  h+=`<div style="border-top:1px solid #f0f0f0;padding-top:.85rem;margin-top:.25rem">
+    <button onclick="showCalAddForm('${ds}')" style="width:100%;padding:10px;border-radius:10px;border:1.5px dashed #ccc;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer">+ 이 날짜로 하자 등록</button>
+  </div>
+      </div>
+    </div>
+  </div>`;
+  const old=document.getElementById('dayPopup'); if(old)old.remove();
+  document.body.insertAdjacentHTML('beforeend',h);
 }
 
-window.openCal=openCal; window.closeCal=closeCal; window.calBgClick=calBgClick;
-window.calMove=calMove; window.calSelect=calSelect;
+window.showCalAddForm = function(ds){
+  const p=ds.split('-');
+  const old=document.getElementById('dayPopup'); if(old)old.remove();
+  const h=`<div id="calAddPopup" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)this.remove()">
+    <div style="background:#fff;border-radius:16px;width:400px;max-width:94vw;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+      <div style="background:#1a1a1a;color:#fff;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:15px;font-weight:700">${p[1]}월 ${p[2]}일 — 하자 등록</span>
+        <button onclick="document.getElementById('calAddPopup').remove()" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;line-height:1">✕</button>
+      </div>
+      <div style="padding:1.25rem;display:flex;flex-direction:column;gap:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label style="font-size:11px;color:#888;font-weight:500;display:block;margin-bottom:4px">층</label>
+            <select id="cal-nfl" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;outline:none">
+              <option>B1</option><option>1F</option><option>2F</option><option>3F</option><option>4F</option><option>5F</option><option>RF</option>
+            </select></div>
+          <div><label style="font-size:11px;color:#888;font-weight:500;display:block;margin-bottom:4px">상태</label>
+            <select id="cal-ns" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;outline:none">
+              <option>미착수</option><option>진행중</option><option>완료</option>
+            </select></div>
+        </div>
+        <div><label style="font-size:11px;color:#888;font-weight:500;display:block;margin-bottom:4px">하자 내용</label>
+          <input id="cal-nt" type="text" placeholder="예: 천장 누수, 바닥 균열" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;outline:none"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label style="font-size:11px;color:#888;font-weight:500;display:block;margin-bottom:4px">위치/구역</label>
+            <input id="cal-nl" type="text" placeholder="예: 북쪽 복도" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;outline:none"></div>
+          <div><label style="font-size:11px;color:#888;font-weight:500;display:block;margin-bottom:4px">담당자</label>
+            <input id="cal-np" type="text" placeholder="이름" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;outline:none"></div>
+        </div>
+        <button onclick="calAddSave('${ds}')" style="width:100%;padding:11px;font-size:14px;font-weight:700;cursor:pointer;border-radius:10px;border:none;background:#1a1a1a;color:#fff">+ 등록</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend',h);
+  setTimeout(()=>{ const el=document.getElementById('cal-nt'); if(el)el.focus(); },50);
+};
+
+window.calAddSave = async function(ds){
+  const t=document.getElementById('cal-nt').value.trim();
+  if(!t){alert('하자 내용을 입력하세요');return;}
+  try{
+    await addDoc(colRef,{
+      floor:document.getElementById('cal-nfl').value,
+      title:t,
+      loc:document.getElementById('cal-nl').value||'-',
+      status:document.getElementById('cal-ns').value,
+      date:ds,
+      person:document.getElementById('cal-np').value||'-',
+      createdAt:serverTimestamp()
+    });
+    document.getElementById('calAddPopup').remove();
+  }catch(e){alert('저장 실패: '+e.message);}
+};
+
+window.openCal=openCal; window.closeCal=closeCal; window.calMove=calMove; window.calDayClick=calDayClick;
 
 window.exportXlsx = function() {
   const wb = XLSX.utils.book_new();
@@ -468,7 +497,6 @@ function render() {
     });
   }
   document.getElementById('list').innerHTML = lH;
-  if(calSelDate && document.getElementById('calOverlay').classList.contains('open')){ renderCal(); }
   const nflEl=document.getElementById('nfl');
   if(nflEl) nflEl.innerHTML=FLOORS.map(f=>`<option${f===cur?' selected':''}>${f}</option>`).join('');
 }
